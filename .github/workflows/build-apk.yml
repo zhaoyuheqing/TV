@@ -3,7 +3,7 @@ name: Build FongMi TV APK
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:  # 手动触发按钮
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,11 +19,25 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install Python dependencies for Chaquopy
+      run: |
+        python -m pip install --upgrade pip
+        # 如果有 requirements.txt 或特定包，pip install 这里
+        # Chaquopy 会用这个 Python
+
+    - name: Set Chaquopy buildPython
+      run: echo "CHAQUOPY_BUILD_PYTHON=$(which python)" >> $GITHUB_ENV
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
     - name: Build Release APK
-      run: ./gradlew assembleRelease  # 或 assembleLeanbackRelease 如果有 flavor
+      run: ./gradlew assembleRelease --stacktrace  # 加 --stacktrace 看详细错误
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
