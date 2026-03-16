@@ -39,7 +39,13 @@ public class ExoUtil {
     }
 
     public static LoadControl buildLoadControl() {
-        return new DefaultLoadControl.Builder().setBufferDurationsMs(DefaultLoadControl.DEFAULT_MIN_BUFFER_MS * Setting.getBuffer(), DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * Setting.getBuffer(), DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS, DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS).build();
+        return new DefaultLoadControl.Builder()
+                .setBufferDurationsMs(
+                        DefaultLoadControl.DEFAULT_MIN_BUFFER_MS * Setting.getBuffer(),
+                        DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * Setting.getBuffer(),
+                        DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
+                        DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS)
+                .build();
     }
 
     public static TrackSelector buildTrackSelector() {
@@ -54,7 +60,9 @@ public class ExoUtil {
     }
 
     public static RenderersFactory buildRenderersFactory(int renderMode) {
-        return new DefaultRenderersFactory(App.get()).setEnableDecoderFallback(true).setExtensionRendererMode(renderMode);
+        return new DefaultRenderersFactory(App.get())
+                .setEnableDecoderFallback(true)
+                .setExtensionRendererMode(renderMode);
     }
 
     public static MediaSource.Factory buildMediaSourceFactory() {
@@ -62,14 +70,20 @@ public class ExoUtil {
     }
 
     public static CaptionStyleCompat getCaptionStyle() {
-        return Setting.isCaption() ? CaptionStyleCompat.createFromCaptionStyle(((CaptioningManager) App.get().getSystemService(Context.CAPTIONING_SERVICE)).getUserStyle()) : new CaptionStyleCompat(Color.WHITE, Color.TRANSPARENT, Color.TRANSPARENT, CaptionStyleCompat.EDGE_TYPE_OUTLINE, Color.BLACK, null);
+        return Setting.isCaption() 
+                ? CaptionStyleCompat.createFromCaptionStyle(
+                        ((CaptioningManager) App.get().getSystemService(Context.CAPTIONING_SERVICE)).getUserStyle())
+                : new CaptionStyleCompat(Color.WHITE, Color.TRANSPARENT, Color.TRANSPARENT,
+                        CaptionStyleCompat.EDGE_TYPE_OUTLINE, Color.BLACK, null);
     }
 
     public static void setSubtitleView(PlayerView exo) {
         exo.getSubtitleView().setStyle(getCaptionStyle());
         exo.getSubtitleView().setApplyEmbeddedStyles(true);
         exo.getSubtitleView().setApplyEmbeddedFontSizes(false);
-        if (Setting.getSubtitleTextSize() != 0) exo.getSubtitleView().setFractionalTextSize(Setting.getSubtitleTextSize());
+        if (Setting.getSubtitleTextSize() != 0) {
+            exo.getSubtitleView().setFractionalTextSize(Setting.getSubtitleTextSize());
+        }
     }
 
     public static String getMimeType(String path) {
@@ -80,9 +94,20 @@ public class ExoUtil {
         return MimeTypes.APPLICATION_SUBRIP;
     }
 
+    /**
+     * 根据错误码返回 fallback MIME 类型
+     * 修改点：MimeTypes.APPLICATION_OCTET_STREAM 已移除，直接返回字符串
+     */
     public static String getMimeType(int errorCode) {
-        if (errorCode == PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED || errorCode == PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED) return MimeTypes.APPLICATION_OCTET_STREAM;
-        if (errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED || errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED || errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED) return MimeTypes.APPLICATION_M3U8;
+        if (errorCode == PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED ||
+            errorCode == PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED) {
+            return "application/octet-stream";  // 这里是修复的关键
+        }
+        if (errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED ||
+            errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED ||
+            errorCode == PlaybackException.ERROR_CODE_IO_UNSPECIFIED) {
+            return MimeTypes.APPLICATION_M3U8;
+        }
         return null;
     }
 
@@ -99,13 +124,22 @@ public class ExoUtil {
 
     private static MediaItem.RequestMetadata getRequestMetadata(Map<String, String> headers, Uri uri) {
         Bundle extras = new Bundle();
-        for (Map.Entry<String, String> header : headers.entrySet()) extras.putString(header.getKey(), header.getValue());
-        return new MediaItem.RequestMetadata.Builder().setMediaUri(uri).setExtras(extras).build();
+        for (Map.Entry<String, String> header : headers.entrySet()) {
+            extras.putString(header.getKey(), header.getValue());
+        }
+        return new MediaItem.RequestMetadata.Builder()
+                .setMediaUri(uri)
+                .setExtras(extras)
+                .build();
     }
 
-    private static List<MediaItem.SubtitleConfiguration> getSubtitleConfigs (List<Sub> subs) {
+    private static List<MediaItem.SubtitleConfiguration> getSubtitleConfigs(List<Sub> subs) {
         List<MediaItem.SubtitleConfiguration> configs = new ArrayList<>();
-        if (subs != null) for (Sub sub : subs) configs.add(sub.config());
+        if (subs != null) {
+            for (Sub sub : subs) {
+                configs.add(sub.config());
+            }
+        }
         return configs;
     }
 }
